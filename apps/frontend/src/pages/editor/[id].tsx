@@ -7,17 +7,25 @@ import { useEditorStore } from '@/store/editor'
 import { apiClient } from '@/lib/api'
 import CodeEditor from '@/components/Editor'
 import Preview from '@/components/Preview'
+import AIAssistant from '@/components/AIAssistant'
+import CodingAgent from '@/components/CodingAgent'
+import DeploymentPanel from '@/components/DeploymentPanel'
+import CollaborationPanel from '@/components/CollaborationPanel'
 import toast from 'react-hot-toast'
 
 export default function EditorPage() {
   const params = useParams()
   const router = useRouter()
   const { user } = useAuthStore()
-  const { code, setCode, setOutput, isExecuting, setExecuting } = useEditorStore()
+  const { code, setCode, setOutput, language, isExecuting, setExecuting } = useEditorStore()
   const [projectId] = useState(params?.id)
   const [files, setFiles] = useState<any[]>([])
   const [currentFile, setCurrentFile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [showAI, setShowAI] = useState(false)
+  const [showAgent, setShowAgent] = useState(false)
+  const [showDeploy, setShowDeploy] = useState(false)
+  const [showCollaborate, setShowCollaborate] = useState(false)
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -94,7 +102,7 @@ export default function EditorPage() {
   }
 
   return (
-    <div className="h-screen bg-dark-950 flex flex-col">
+    <div className="h-screen bg-dark-950 flex flex-col overflow-hidden">
       {/* Toolbar */}
       <div className="bg-dark-900 border-b border-gray-700 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -106,7 +114,31 @@ export default function EditorPage() {
           </button>
           <h1 className="text-white font-semibold">{currentFile?.name || 'Untitled'}</h1>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowAI(!showAI)}
+            className="px-3 py-1 bg-purple-600 text-white rounded text-sm hover:bg-purple-700"
+          >
+            ✨ AI
+          </button>
+          <button
+            onClick={() => setShowAgent(!showAgent)}
+            className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+          >
+            🤖 Agent
+          </button>
+          <button
+            onClick={() => setShowDeploy(!showDeploy)}
+            className="px-3 py-1 bg-orange-600 text-white rounded text-sm hover:bg-orange-700"
+          >
+            🚀 Deploy
+          </button>
+          <button
+            onClick={() => setShowCollaborate(!showCollaborate)}
+            className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
+          >
+            👥 Share
+          </button>
           <button
             onClick={handleSaveFile}
             className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
@@ -124,9 +156,9 @@ export default function EditorPage() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Files Sidebar */}
-        <div className="w-64 bg-dark-900 border-r border-gray-700 overflow-auto p-4">
+      <div className="flex-1 flex overflow-hidden gap-4 p-4">
+        {/* Left Sidebar */}
+        <div className="w-64 bg-dark-900 rounded-lg border border-gray-700 overflow-auto p-4">
           <h3 className="text-white font-semibold mb-4">Files</h3>
           <div className="space-y-2">
             {files.map((file) => (
@@ -149,7 +181,7 @@ export default function EditorPage() {
         </div>
 
         {/* Editor and Preview */}
-        <div className="flex-1 flex gap-4 p-4 overflow-hidden">
+        <div className="flex-1 flex gap-4 overflow-hidden">
           <div className="flex-1 min-w-0">
             <CodeEditor fileName={currentFile?.name} />
           </div>
@@ -157,6 +189,16 @@ export default function EditorPage() {
             <Preview isLoading={isExecuting} />
           </div>
         </div>
+
+        {/* Right Sidebar - AI/Features */}
+        {(showAI || showAgent || showDeploy || showCollaborate) && (
+          <div className="w-96 overflow-auto space-y-4">
+            {showAI && <AIAssistant code={code} language={language} />}
+            {showAgent && <CodingAgent onCodeGenerated={setCode} />}
+            {showDeploy && <DeploymentPanel projectId={projectId as string} />}
+            {showCollaborate && <CollaborationPanel projectId={projectId as string} />}
+          </div>
+        )}
       </div>
     </div>
   )
