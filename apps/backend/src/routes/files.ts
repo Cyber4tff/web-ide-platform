@@ -1,26 +1,14 @@
-import { Router, Request, Response } from 'express'
+import { Router } from 'express'
+import { getFiles, createFile, updateFile, deleteFile } from '../controllers/files'
+import { authMiddleware } from '../middleware'
 
 const router = Router()
 
-/**
- * @route   GET /api/projects/:id/files
- * @desc    Get project files
- * @access  Protected
- */
-router.get('/', async (req: Request, res: Response) => {
-  try {
-    res.json({
-      success: true,
-      data: {
-        files: [],
-      },
-    })
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch files',
-    })
-  }
-})
+router.use(authMiddleware)
+
+router.get('/:projectId/files', getFiles)
+router.post('/:projectId/files', createFile)
+router.put('/:projectId/files/:fileId', updateFile)
+router.delete('/:projectId/files/:fileId', deleteFile)
 
 export default router
